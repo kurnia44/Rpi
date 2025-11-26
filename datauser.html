@@ -308,7 +308,7 @@
             <span class="close-btn" onclick="closeModal()">&times;</span>
         </div>
         <div class="modal-body">
-            <input type="hidden" id="editIndex"> 
+            <input type="hidden" id="editRowId"> 
             
             <div class="form-group">
                 <label for="editName">Nama Pelanggan:</label>
@@ -340,7 +340,7 @@
                 </select>
             </div>
             
-            <button class="btn-submit" onclick="alert('Fitur edit memerlukan implementasi Apps Script yang lebih lanjut.')">Simpan Perubahan</button>
+            <button class="btn-submit" onclick="saveEdit()">Simpan Perubahan</button>
         </div>
     </div>
 </div>
@@ -348,7 +348,7 @@
 <script>
     // *******************************************************************
     // GANTI NILAI STRING DI BAWAH INI DENGAN URL WEB APP DEPLOYMENT ANDA!
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyXeyT07xdgcwVpJFi9X5hilpy5mWEKQNCyWhVd5AT6dfHVvW6ceyDRvik-weA861k3/exec"; 
+    const WEB_APP_URL = "ISI_DENGAN_URL_ANDA_DI_SINI"; 
     // *******************************************************************
     
     let users = [];
@@ -401,7 +401,7 @@
             try {
                 result = JSON.parse(textResult); 
             } catch (e) {
-                // Jika gagal parse, ini berarti Apps Script tidak mengembalikan JSON yang valid
+                // Menangkap error jika balasan bukan JSON (e.g. HTML atau pesan teks murni dari GAS)
                 throw new SyntaxError(`Apps Script response error. Received: "${textResult.substring(0, 30)}..."`);
             }
             
@@ -458,8 +458,93 @@
             alert("Error saat menyimpan data: " + error);
         }
     }
+    
+    async function saveEditToSheet(editedUser) {
+        const formData = {
+            action: 'editUser',
+            rowId: editedUser.rowId, // Mengirimkan nomor baris ke Apps Script
+            name: editedUser.name,
+            location: editedUser.location,
+            phone: editedUser.phone,
+            ontId: editedUser.ontId,
+            signal: editedUser.signal,
+            status: editedUser.status
+        };
+        
+        const body = new URLSearchParams(formData);
 
-    // --- FUNGSI UTILITY ---
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: body,
+            });
+            
+            const textResult = await response.text();
+            
+            let result;
+            try {
+                result = JSON.parse(textResult);
+            } catch (e) {
+                throw new SyntaxError(`Apps Script response error. Received: "${textResult.substring(0, 30)}..."`);
+            }
+
+            if (result.result === "success") {
+                closeModal();
+                await loadUsersFromSheet();
+                filterAndRenderUserTable(''); 
+                updateTotalCount(); 
+                alert("Data berhasil diperbarui di Google Sheets!");
+            } else {
+                alert("Gagal menyimpan perubahan ke Sheets: " + result.message);
+            }
+        } catch (error) {
+            alert("Error saat menyimpan perubahan: " + error);
+        }
+    }
+    
+    async function deleteUserFromSheet(user) {
+        const formData = {
+            action: 'deleteUser',
+            rowId: user.rowId
+        };
+        
+        const body = new URLSearchParams(formData);
+
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: body,
+            });
+            
+            const textResult = await response.text();
+            
+            let result;
+            try {
+                result = JSON.parse(textResult);
+            } catch (e) {
+                throw new SyntaxError(`Apps Script response error. Received: "${textResult.substring(0, 30)}..."`);
+            }
+
+            if (result.result === "success") {
+                await loadUsersFromSheet();
+                filterAndRenderUserTable(''); 
+                updateTotalCount(); 
+                alert("Data berhasil dihapus dari Google Sheets.");
+            } else {
+                alert("Gagal menghapus data dari Sheets: " + result.message);
+            }
+        } catch (error) {
+            alert("Error saat menghapus data: " + error);
+        }
+    }
+
+    // --- FUNGSI UTILITY & UI ---
     function updateTotalCount() {
         document.getElementById('totalUsersCount').innerText = users.length;
     }
@@ -498,6 +583,9 @@
         }
 
         dataToRender.forEach((user, index) => {
+            // Kita perlu mencari index di array users untuk menemukan objek user lengkap
+            const userObjectIndex = users.findIndex(u => u.rowId === user.rowId);
+            
             const signalClass = getSignalClass(user.signal);
             
             const row = `
@@ -514,13 +602,55 @@
                     </td>
                     <td>${user.status}</td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="alert('Fitur edit memerlukan kode Google Apps Script yang kompleks.')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="alert('Fitur hapus memerlukan kode Google Apps Script yang kompleks.')">Hapus</button>
+                        <button class="btn-action btn-edit" onclick="editUser(${userObjectIndex})">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteConfirmation(${userObjectIndex})">Hapus</button>
                     </td>
                 </tr>
             `;
             tableBody.innerHTML += row;
         });
+    }
+    
+    // --- FITUR EDIT/HAPUS (BARU) ---
+
+    function editUser(index) {
+        const user = users[index];
+        
+        document.getElementById('editRowId').value = user.rowId; // Simpan Row ID
+        document.getElementById('editName').value = user.name;
+        document.getElementById('editLocation').value = user.location;
+        document.getElementById('editPhone').value = user.phone; 
+        document.getElementById('editOntId').value = user.ontId;
+        document.getElementById('editSignal').value = user.signal;
+        document.getElementById('editStatus').value = user.status;
+        
+        openModal();
+    }
+
+    function saveEdit() {
+        const rowId = document.getElementById('editRowId').value;
+        const name = document.getElementById('editName').value.trim().toLowerCase(); 
+        const location = document.getElementById('editLocation').value.trim().toLowerCase(); 
+        const phone = document.getElementById('editPhone').value.trim(); 
+        const ontId = document.getElementById('editOntId').value.trim();
+        const signal = parseFloat(document.getElementById('editSignal').value);
+        const status = document.getElementById('editStatus').value;
+
+        if (name === "" || ontId === "" || isNaN(signal)) {
+            alert("Harap isi semua kolom wajib dengan benar!");
+            return;
+        }
+        
+        const editedUser = { rowId, name, location, phone, ontId, signal, status }; 
+        
+        saveEditToSheet(editedUser);
+    }
+    
+    function deleteConfirmation(index) {
+        const user = users[index];
+        if (confirm(`Apakah Anda yakin ingin menghapus data pelanggan ${user.name} (Baris ${user.rowId})?`)) {
+            deleteUserFromSheet(user);
+        }
     }
     
     // --- DATA INPUT LOGIC ---
@@ -554,16 +684,7 @@
         document.getElementById('userStatus').value = 'Aktif'; 
     }
     
-    // --- FITUR NON-AKTIF ---
-    function deleteUser(index) {
-        alert('Fitur hapus memerlukan kode Google Apps Script yang kompleks.');
-    }
-    
-    function editUser(index) {
-        alert('Fitur edit memerlukan kode Google Apps Script yang kompleks.');
-    }
-    
-    // --- MODAL LOGIC (TIDAK BERFUNGSI PENUH) ---
+    // --- MODAL LOGIC ---
     function openModal() {
         document.getElementById('editModal').style.display = 'block';
     }
@@ -572,10 +693,6 @@
         document.getElementById('editModal').style.display = 'none';
     }
 
-    function saveEdit() {
-        alert('Fitur edit tidak diimplementasikan pada versi Google Sheets ini.');
-    }
-    
     window.onclick = function(event) {
         if (event.target == document.getElementById('editModal')) {
             closeModal();
