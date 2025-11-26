@@ -35,6 +35,9 @@
             --card-bg: #ffffff;
             --text: #1e293b;
             --border: #e2e8f0;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
         }
 
         body {
@@ -80,8 +83,6 @@
             text-align: center;
             position: relative;
         }
-        
-        /* Tombol Keluar Dihilangkan dari CSS dan HTML */
         
         #profileImage {
             width: 100px;
@@ -168,7 +169,7 @@
             background-color: #1e40af;
         }
 
-        /* --- CALCULATOR SCREEN STYLES (Dipindahkan ke sini untuk menjaga konsistensi) --- */
+        /* --- CALCULATOR SCREEN STYLES (Diperbaiki) --- */
         .input-section {
             background: var(--card-bg);
             padding: 20px;
@@ -177,9 +178,105 @@
             margin-bottom: 25px;
             text-align: center;
         }
-        
-        /* [Tambahan style kalkulator lainnya disederhanakan/dihapus di file ini] */
 
+        /* Input Power Styling */
+        #inputPower {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            width: 100px; 
+            text-align: center;
+            font-family: 'FontkuCustom', sans-serif;
+            font-weight: bold;
+        }
+
+        /* Grid untuk Splitter */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 600px) {
+            .grid-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h2 {
+            color: var(--primary);
+            font-size: 1.2em;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        /* Tabel PLC */
+        .card table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        .card th, .card td {
+            border: 1px solid var(--border);
+            padding: 8px;
+            text-align: center;
+        }
+        .card th {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        /* Hasil Warna */
+        .result-val {
+            font-weight: bold;
+        }
+        .good { color: var(--success); }
+        .warning { color: var(--warning); }
+        .danger { color: var(--danger); }
+        
+        /* Rasio Custom Inputs */
+        .ratio-inputs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .ratio-inputs input {
+            width: 50px;
+            text-align: center;
+            padding: 5px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        /* Rasio Display */
+        .ratio-display {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        .port-box {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            flex: 1;
+            margin: 0 5px;
+        }
+        .port-val {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* Tombol Kembali */
         .back-button {
             background: none;
             border: none;
@@ -194,6 +291,14 @@
         }
         .back-button:before {
             content: '← ';
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.8em;
+            color: #64748b;
         }
     </style>
 </head>
@@ -242,7 +347,7 @@
         
         <div class="input-section">
             <label for="inputPower">Input Power (OLT/Splicer)</label>
-            <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
+            <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-top: 10px;">
                 <input type="number" id="inputPower" placeholder="Contoh: 5" step="0.1" value="5">
                 <span style="font-weight:bold;">dBm</span>
             </div>
@@ -292,7 +397,7 @@
                     <strong>Perhitungan Loss (Teori):</strong><br>
                     Loss Port 1: <span id="lossP1">-</span> dB<br>
                     Loss Port 2: <span id="lossP2">-</span> dB
-                    <small style="display: block; color: #dc2626; margin-top: 5px;" id="errorMsg"></small>
+                    <small style="display: block; color: var(--danger); margin-top: 5px;" id="errorMsg"></small>
                 </div>
             </div>
         </div>
@@ -426,6 +531,7 @@
         }
 
         const EXCESS_LOSS = 0.5;
+        // Rumus Teori: $Loss = -10 * log10(Power / 100)$
         const loss_p1_ideal = -10 * Math.log10(p1 / 100);
         const loss_p1_final = loss_p1_ideal + EXCESS_LOSS;
         const loss_p2_ideal = -10 * Math.log10(p2 / 100);
