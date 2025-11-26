@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPI Tools - Data User</title>
+    <style>
+        /* --- 1. CUSTOM FONT DEFINITION (DIULANG DARI INDEX.HTML) --- */
+        @font-face {
+            font-family: 'FontkuCustom';
+            src: url('fontku.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        @font-face {
+            font-family: 'TombolCustom';
+            src: url('tombol.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'JudulCustom';
+            src: url('judul.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        /* -------------------------------------- */
+
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --edit-btn: #3b82f6; 
+        }
+
+        body {
+            font-family: 'FontkuCustom', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JudulCustom', sans-serif;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        @media (min-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .form-group label {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: 'FontkuCustom', sans-serif;
+        }
+        
+        .btn-submit {
+            font-family: 'TombolCustom', sans-serif;
+            background-color: var(--success);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        /* TABLE STYLES */
+        .user-table-container {
+            overflow-x: auto; 
+        }
+
+        .user-table {
+            width: 100%;
+            min-width: 700px; 
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.85em;
+        }
+        .user-table th, .user-table td {
+            padding: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .user-table th {
+            background-color: var(--bg);
+            color: var(--primary);
+        }
+        
+        /* SIGNAL STATUS INDICATORS */
+        .status-badge {
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: white;
+            display: inline-block;
+        }
+        .status-good { background-color: var(--success); } 
+        .status-warn { background-color: var(--warning); } 
+        .status-critical { background-color: var(--danger); } 
+        
+        .btn-action {
+            font-family: 'TombolCustom', sans-serif;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+
+        .btn-edit { background-color: var(--edit-btn); color: white; }
+        .btn-delete { background-color: var(--danger); color: white; }
+        
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            font-family: 'FontkuCustom', sans-serif;
+        }
+        .back-button:before {
+            content: '← ';
+        }
+
+        /* --- MODAL/POP-UP STYLES --- */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5); 
+            padding-top: 50px;
+        }
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 5% auto; 
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%; 
+            max-width: 500px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .close-btn {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: var(--danger);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-body .form-group {
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body onload="initDataUser()">
+
+<div class="container">
+    <a href="index.html" class="back-button">Kembali ke Menu Utama</a>
+    <h1>Data User Pelanggan</h1>
+
+    <div class="card">
+        <h2>Input Pelanggan Baru</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="userName">Nama Pelanggan:</label>
+                <input type="text" id="userName" required>
+            </div>
+            <div class="form-group">
+                <label for="userLocation">Alamat/Lokasi:</label>
+                <input type="text" id="userLocation">
+            </div>
+            <div class="form-group"> 
+                <label for="userPhone">Nomer HP:</label>
+                <input type="tel" id="userPhone" placeholder="08xxxxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label for="userOntId">ID ONT/ONU:</label>
+                <input type="text" id="userOntId" placeholder="Contoh: Huawei-12345678" required>
+            </div>
+             <div class="form-group">
+                <label for="userSignal">Sinyal Diterima (dBm):</label>
+                <input type="number" id="userSignal" placeholder="Contoh: -20.5" step="0.1" required>
+            </div>
+            <div class="form-group">
+                <label for="userStatus">Status:</label>
+                <select id="userStatus">
+                    <option value="Aktif">Aktif</option>
+                    <option value="Non-Aktif">Non-Aktif</option>
+                    <option value="Baru Terpasang">Baru Terpasang</option>
+                    <option value="Gangguan">Gangguan</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn-submit" onclick="addUser()">+ Simpan Data Pelanggan</button>
+    </div>
+    
+    <div class="card">
+        <h2>Daftar Pelanggan Tersimpan</h2>
+        
+        <p style="font-weight: bold; margin-bottom: 10px;">
+            Total Data Pelanggan: <span id="totalUsersCount" style="color: var(--primary);">0</span>
+        </p> 
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label for="searchUser">Cari Data (Nama, ID ONT, Lokasi, HP):</label>
+            <input type="text" id="searchUser" placeholder="Ketik nama, lokasi, HP atau ID ONT..." oninput="filterAndRenderUserTable(this.value)">
+        </div>
+        
+        <div class="user-table-container">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Nama</th>
+                        <th>Lokasi</th>
+                        <th>Nomer HP</th>
+                        <th>ID ONT</th>
+                        <th>Sinyal (dBm)</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="userTable">
+                    </tbody>
+            </table>
+        </div>
+         <p style="font-size:0.8em; margin-top:15px; text-align:center; color:#64748b;">
+            **Logika Sinyal:** Hijau (Baik, >-25), Kuning (Waspada, -25 s/d -28), Merah (Kritis, <-28).
+         </p>
+    </div>
+    
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 style="margin: 0; font-family: 'FontkuCustom', sans-serif;">Edit Data Pelanggan</h3>
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="editIndex"> 
+            
+            <div class="form-group">
+                <label for="editName">Nama Pelanggan:</label>
+                <input type="text" id="editName" required>
+            </div>
+            <div class="form-group">
+                <label for="editLocation">Alamat/Lokasi:</label>
+                <input type="text" id="editLocation">
+            </div>
+            <div class="form-group">
+                <label for="editPhone">Nomer HP:</label>
+                <input type="tel" id="editPhone" required>
+            </div>
+            <div class="form-group">
+                <label for="editOntId">ID ONT/ONU:</label>
+                <input type="text" id="editOntId" required>
+            </div>
+             <div class="form-group">
+                <label for="editSignal">Sinyal Diterima (dBm):</label>
+                <input type="number" id="editSignal" step="0.1" required>
+            </div>
+            <div class="form-group">
+                <label for="editStatus">Status:</label>
+                <select id="editStatus">
+                    <option value="Aktif">Aktif</option>
+                    <option value="Non-Aktif">Non-Aktif</option>
+                    <option value="Baru Terpasang">Baru Terpasang</option>
+                    <option value="Gangguan">Gangguan</option>
+                </select>
+            </div>
+            
+            <button class="btn-submit" onclick="alert('Fitur edit memerlukan implementasi Apps Script yang lebih lanjut.')">Simpan Perubahan</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // *******************************************************************
+    // GANTI NILAI STRING DI BAWAH INI DENGAN URL WEB APP DEPLOYMENT ANDA!
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyXeyT07xdgcwVpJFi9X5hilpy5mWEKQNCyWhVd5AT6dfHVvW6ceyDRvik-weA861k3/exec"; 
+    // *******************************************************************
+    
+    let users = [];
+    let isInitialized = false;
+
+    async function initDataUser() {
+        if (isInitialized) return; 
+        isInitialized = true;
+        
+        if (WEB_APP_URL === "ISI_DENGAN_URL_ANDA_DI_SINI") {
+            alert("PERINGATAN: Harap ganti variabel WEB_APP_URL dengan URL Google Apps Script Anda!");
+            document.getElementById('userTable').innerHTML = '<tr><td colspan="8" style="color:var(--danger); padding: 20px;">ERROR: WEB_APP_URL belum diatur.</td></tr>';
+            return;
+        }
+
+        document.getElementById('userTable').innerHTML = '<tr><td colspan="8" style="color:#64748b; padding: 20px;">Memuat data dari Google Sheets...</td></tr>';
+        
+        await loadUsersFromSheet();
+        
+        filterAndRenderUserTable('');
+        updateTotalCount();
+        
+        // Atur agar tombol back ponsel kembali ke index.html
+        history.pushState(null, null, 'datauser.html');
+        window.addEventListener('popstate', function(event) {
+            if (location.pathname.endsWith('datauser.html')) {
+                window.location.href = 'index.html';
+            }
+        });
+    }
+    
+    // --- FUNGSI KOMUNIKASI GOOGLE SHEETS ---
+
+    async function loadUsersFromSheet() {
+        const formData = { action: 'getUsers' };
+        const body = new URLSearchParams(formData);
+        
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: body,
+            });
+            
+            const textResult = await response.text(); 
+            
+            let result;
+            try {
+                result = JSON.parse(textResult); 
+            } catch (e) {
+                // Jika gagal parse, ini berarti Apps Script tidak mengembalikan JSON yang valid
+                throw new SyntaxError(`Apps Script response error. Received: "${textResult.substring(0, 30)}..."`);
+            }
+            
+            if (result.result === "success") {
+                users = result.users || [];
+            } else {
+                alert("Gagal memuat data: " + result.message);
+            }
+        } catch (error) {
+            alert("Error saat koneksi ke Google Apps Script. Pastikan URL dan Deployment sudah benar. Error: " + error);
+        }
+    }
+    
+    async function saveNewUserToSheet(newUser) {
+        const formData = {
+            action: 'addUser',
+            name: newUser.name,
+            location: newUser.location,
+            phone: newUser.phone,
+            ontId: newUser.ontId,
+            signal: newUser.signal,
+            status: newUser.status
+        };
+        
+        const body = new URLSearchParams(formData);
+
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: body,
+            });
+            
+            const textResult = await response.text();
+            
+            let result;
+            try {
+                result = JSON.parse(textResult);
+            } catch (e) {
+                throw new SyntaxError(`Apps Script response error. Received: "${textResult.substring(0, 30)}..."`);
+            }
+
+            if (result.result === "success") {
+                await loadUsersFromSheet();
+                filterAndRenderUserTable(''); 
+                updateTotalCount(); 
+                alert("Data berhasil disimpan ke Google Sheets!");
+            } else {
+                alert("Gagal menyimpan data ke Sheets: " + result.message);
+            }
+        } catch (error) {
+            alert("Error saat menyimpan data: " + error);
+        }
+    }
+
+    // --- FUNGSI UTILITY ---
+    function updateTotalCount() {
+        document.getElementById('totalUsersCount').innerText = users.length;
+    }
+    
+    function filterAndRenderUserTable(searchTerm) {
+        const lowerCaseSearch = searchTerm.toLowerCase();
+        
+        const filteredUsers = users.filter(user => {
+            return user.name.toLowerCase().includes(lowerCaseSearch) ||
+                   user.ontId.toLowerCase().includes(lowerCaseSearch) ||
+                   user.location.toLowerCase().includes(lowerCaseSearch) ||
+                   user.phone.toLowerCase().includes(lowerCaseSearch); 
+        });
+        
+        renderUserTable(filteredUsers);
+    }
+
+    function getSignalClass(signal) {
+        if (signal >= -25.0) {
+            return 'status-good'; 
+        } else if (signal > -28.0) { 
+            return 'status-warn'; 
+        } else {
+            return 'status-critical'; 
+        }
+    }
+
+    function renderUserTable(dataArray) {
+        const dataToRender = dataArray || users;
+        const tableBody = document.getElementById('userTable');
+        tableBody.innerHTML = '';
+        
+        if (dataToRender.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="8" style="color:#64748b; padding: 20px;">Data pelanggan tidak ditemukan atau belum tersimpan.</td></tr>';
+            return;
+        }
+
+        dataToRender.forEach((user, index) => {
+            const signalClass = getSignalClass(user.signal);
+            
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${user.name}</td>
+                    <td>${user.location || '-'}</td>
+                    <td>${user.phone || '-'}</td>
+                    <td>${user.ontId}</td>          
+                    <td>
+                        <span class="status-badge ${signalClass}">
+                            ${parseFloat(user.signal).toFixed(2)} dBm
+                        </span>
+                    </td>
+                    <td>${user.status}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="alert('Fitur edit memerlukan kode Google Apps Script yang kompleks.')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="alert('Fitur hapus memerlukan kode Google Apps Script yang kompleks.')">Hapus</button>
+                    </td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    }
+    
+    // --- DATA INPUT LOGIC ---
+    async function addUser() {
+        const name = document.getElementById('userName').value.trim().toLowerCase(); 
+        const location = document.getElementById('userLocation').value.trim().toLowerCase(); 
+        const phone = document.getElementById('userPhone').value.trim(); 
+        const ontId = document.getElementById('userOntId').value.trim();
+        const signal = parseFloat(document.getElementById('userSignal').value);
+        const status = document.getElementById('userStatus').value;
+
+        if (name === "" || ontId === "" || isNaN(signal)) {
+            alert("Harap isi Nama, ID ONT, dan Sinyal dengan benar!");
+            return;
+        }
+        
+        if (signal > 0) {
+             alert("Peringatan: Sinyal optik biasanya bernilai negatif (misal: -20.5 dBm). Harap cek input Anda.");
+        }
+        
+        const newUser = { name, location, phone, ontId, signal, status };
+
+        await saveNewUserToSheet(newUser);
+        
+        // Reset form
+        document.getElementById('userName').value = '';
+        document.getElementById('userLocation').value = '';
+        document.getElementById('userPhone').value = ''; 
+        document.getElementById('userOntId').value = '';
+        document.getElementById('userSignal').value = '';
+        document.getElementById('userStatus').value = 'Aktif'; 
+    }
+    
+    // --- FITUR NON-AKTIF ---
+    function deleteUser(index) {
+        alert('Fitur hapus memerlukan kode Google Apps Script yang kompleks.');
+    }
+    
+    function editUser(index) {
+        alert('Fitur edit memerlukan kode Google Apps Script yang kompleks.');
+    }
+    
+    // --- MODAL LOGIC (TIDAK BERFUNGSI PENUH) ---
+    function openModal() {
+        document.getElementById('editModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    function saveEdit() {
+        alert('Fitur edit tidak diimplementasikan pada versi Google Sheets ini.');
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('editModal')) {
+            closeModal();
+        }
+    }
+
+</script>
+
+</body>
+</html>

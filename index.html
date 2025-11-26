@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Pembantu Teknisi Optik</title>
+    <style>
+        /* --- 1. CUSTOM FONT DEFINITION --- */
+        @font-face {
+            font-family: 'FontkuCustom';
+            src: url('fontku.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        @font-face {
+            font-family: 'TombolCustom';
+            src: url('tombol.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* --- CUSTOM FONT FOR MAIN TITLE --- */
+        @font-face {
+            font-family: 'JudulCustom';
+            src: url('judul.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        /* -------------------------------------- */
+
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'FontkuCustom', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JudulCustom', sans-serif;
+        }
+        
+        .title-logo {
+            width: 40px; 
+            height: 40px; 
+            margin-right: 10px;
+            border-radius: 5px;
+        }
+
+        /* --- HOME SCREEN STYLES --- */
+        #homeScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+            position: relative;
+        }
+        
+        /* Tombol Keluar Dihilangkan dari CSS dan HTML */
+        
+        #profileImage {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid var(--primary);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .biodata-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 25px;
+            flex-wrap: wrap; 
+        }
+
+        .biodata-box {
+            background-color: var(--card-bg);
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            max-width: 350px;
+            min-width: 200px;
+            text-align: left;
+            flex: 1;
+        }
+        @media (max-width: 600px) {
+            .biodata-box {
+                min-width: 100%;
+            }
+        }
+
+
+        .biodata-box h3 {
+            margin-top: 0;
+            font-size: 1em;
+            color: var(--primary);
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+        .biodata-box p {
+            margin: 3px 0;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+        }
+        .biodata-box strong {
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        
+        .company-logo {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+
+        .main-button {
+            font-family: 'TombolCustom', sans-serif; 
+            padding: 12px 25px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--card-bg);
+            background-color: var(--primary);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+            width: 90%;
+            max-width: 350px;
+            margin-top: 10px; 
+            text-decoration: none; /* Untuk link */
+            display: inline-block;
+        }
+
+        .main-button:hover {
+            background-color: #1e40af;
+        }
+
+        /* --- CALCULATOR SCREEN STYLES (Dipindahkan ke sini untuk menjaga konsistensi) --- */
+        .input-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        /* [Tambahan style kalkulator lainnya disederhanakan/dihapus di file ini] */
+
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            font-family: 'FontkuCustom', sans-serif;
+        }
+        .back-button:before {
+            content: '← ';
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="homeScreen">
+        
+        <h1>
+            <img class="title-logo" src="rpi.png" alt="Logo RPI" onerror="this.onerror=null; this.src='placeholder.png';" title="Logo Perusahaan">
+            RPI TOOLS 🛠️
+        </h1>
+        
+        <img id="profileImage" src="profil.png" alt="Foto Profil" onerror="this.onerror=null; this.src='placeholder.png';" title="Foto Profil Anda">
+        
+        <div class="biodata-container">
+            <div class="biodata-box">
+                <h3>Informasi Teknisi</h3>
+                <p>Nama Teknisi : <strong>Kurnia Sandi</strong></p>
+                <p>Tugas Teknisi : <strong>Operator Lapangan</strong></p>
+            </div>
+            
+            <div class="biodata-box">
+                <h3>Informasi Perusahaan</h3>
+                <p>
+                    <img class="company-logo" src="rpi.png" alt="Logo RPI" onerror="this.onerror=null; this.src='placeholder.png';">
+                    Nama Perusahaan : <strong>RPI</strong>
+                </p>
+                <p>Kepanjangan : <strong>Rokan Pesisir Interkoneksi</strong></p>
+            </div>
+        </div>
+        
+        <p>Pilih alat yang ingin Anda gunakan:</p>
+        
+        <button class="main-button" onclick="showScreen('calculator')">Kalkulator Redaman dBm</button>
+
+        <a href="datauser.html" class="main-button">Data User</a>
+        
+        <a href="datauserlama.html" class="main-button" style="background-color: #3b82f6;">Data User Lama</a>
+    </div>
+
+    <div id="calculatorScreen" style="display:none;">
+        <button class="back-button" onclick="showScreen('home')">Kembali ke Menu Utama</button>
+        <h1>Kalkulator Redaman Optik (FTTH)</h1>
+        
+        <div class="input-section">
+            <label for="inputPower">Input Power (OLT/Splicer)</label>
+            <div style="display:flex; justify-content:center; align-items:center; gap:10px;">
+                <input type="number" id="inputPower" placeholder="Contoh: 5" step="0.1" value="5">
+                <span style="font-weight:bold;">dBm</span>
+            </div>
+            <small style="color: #64748b;">Masukkan nilai (+) atau (-) sesuai sumber</small>
+        </div>
+        
+        <div class="grid-container">
+            
+            <div class="card">
+                <h2>Splitter PLC (Standard)</h2>
+                <p style="font-size:0.9em; color:#64748b;">Estimasi loss termasuk konektor (~0.3dB)</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipe</th>
+                            <th>Loss (dB)</th>
+                            <th>Output (dBm)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plcTable">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>Splitter Rasio Custom (FBT 1:2)</h2>
+                <p style="font-size:0.9em; color:#64748b;">Masukkan persentase pembagian (Total harus 100%):</p>
+                
+                <div class="ratio-inputs">
+                    <input type="number" id="ratioP1" value="90" min="1" max="99" oninput="updateRatioP2(); calculateRatio(); saveData();">
+                    <span>:</span>
+                    <input type="number" id="ratioP2" value="10" min="1" max="99" oninput="updateRatioP1(); calculateRatio(); saveData();">
+                </div>
+                
+                <div class="ratio-display">
+                    <div class="port-box">
+                        <small id="labelPort1">Port 1 (..%)</small>
+                        <div id="valPort1" class="port-val">-</div>
+                    </div>
+                    <div class="port-box">
+                        <small id="labelPort2">Port 2 (..%)</small>
+                        <div id="valPort2" class="port-val">-</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; font-size: 0.9em;">
+                    <strong>Perhitungan Loss (Teori):</strong><br>
+                    Loss Port 1: <span id="lossP1">-</span> dB<br>
+                    Loss Port 2: <span id="lossP2">-</span> dB
+                    <small style="display: block; color: #dc2626; margin-top: 5px;" id="errorMsg"></small>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2025 Optical Calculator.
+        </footer>
+    </div>
+</div>
+
+<script>
+    // --- LOCAL STORAGE FUNCTIONS (HANYA UNTUK KALKULATOR) ---
+    function saveData() {
+        localStorage.setItem('inputPowerValue', document.getElementById('inputPower').value);
+        localStorage.setItem('ratioP1Value', document.getElementById('ratioP1').value);
+        localStorage.setItem('ratioP2Value', document.getElementById('ratioP2').value);
+    }
+
+    function loadData() {
+        const inputPower = localStorage.getItem('inputPowerValue');
+        const ratioP1 = localStorage.getItem('ratioP1Value');
+        const ratioP2 = localStorage.getItem('ratioP2Value');
+
+        if (inputPower !== null) { document.getElementById('inputPower').value = inputPower; }
+        if (ratioP1 !== null && ratioP2 !== null) {
+            document.getElementById('ratioP1').value = ratioP1;
+            document.getElementById('ratioP2').value = ratioP2;
+        }
+        calculateAll();
+    }
+    
+    // --- NAVIGATION FUNCTIONS (MODIFIED HANYA UNTUK 2 SCREEN) ---
+    function showScreen(screen) {
+        document.getElementById('homeScreen').style.display = 'none';
+        document.getElementById('calculatorScreen').style.display = 'none';
+
+        if (screen === 'calculator') {
+            document.getElementById('calculatorScreen').style.display = 'block';
+            loadData();
+            initCalculator();
+            history.pushState({ page: 'calculator' }, '', '#calculator');
+        } else { // 'home'
+            document.getElementById('homeScreen').style.display = 'flex';
+            history.replaceState({ page: 'home' }, '', location.pathname);
+        }
+    }
+
+    // --- POPSTATE LISTENER ---
+    window.addEventListener('popstate', function(event) {
+        const hash = location.hash;
+        
+        if (hash === '#calculator') {
+            showScreen('calculator');
+        } else {
+            showScreen('home');
+        }
+    });
+    
+    // --- CALCULATOR LOGIC (INIT) ---
+    const plcData = [
+        { type: "1:2", loss: 4.0 }, { type: "1:4", loss: 7.5 }, 
+        { type: "1:8", loss: 10.8 }, { type: "1:16", loss: 14.0 }, 
+        { type: "1:32", loss: 17.5 }, { type: "1:64", loss: 21.0 }
+    ];
+    const inputEl = document.getElementById('inputPower');
+    const plcTable = document.getElementById('plcTable');
+    const ratioP1 = document.getElementById('ratioP1');
+    const ratioP2 = document.getElementById('ratioP2');
+    const errorMsg = document.getElementById('errorMsg');
+
+    function initCalculator() {
+        if (!inputEl.hasEventListener) {
+            inputEl.addEventListener('input', () => {
+                calculateAll();
+                saveData();
+            });
+            inputEl.hasEventListener = true;
+        }
+        calculateAll();
+    }
+    
+    function updateRatioP2() {
+        const p1 = parseInt(ratioP1.value) || 0;
+        ratioP2.value = 100 - p1;
+    }
+
+    function updateRatioP1() {
+        const p2 = parseInt(ratioP2.value) || 0;
+        ratioP1.value = 100 - p2;
+    }
+
+    function calculateAll() {
+        calculatePLC();
+        calculateRatio();
+    }
+
+    function calculatePLC() {
+        const inputPower = parseFloat(inputEl.value) || 0;
+        plcTable.innerHTML = ""; 
+
+        plcData.forEach(item => {
+            const result = (inputPower - item.loss).toFixed(2);
+            let colorClass = "good";
+            if(result < -25) colorClass = "warning";
+            if(result < -28) colorClass = "danger";
+            const row = `
+                <tr>
+                    <td>${item.type}</td>
+                    <td>-${item.loss} dB</td>
+                    <td class="result-val ${colorClass}">${result} dBm</td>
+                </tr>
+            `;
+            plcTable.innerHTML += row;
+        });
+    }
+
+    function calculateRatio() {
+        const inputPower = parseFloat(inputEl.value) || 0;
+        const p1 = parseFloat(ratioP1.value) || 0;
+        const p2 = parseFloat(ratioP2.value) || 0;
+        
+        if (p1 + p2 !== 100 || p1 <= 0 || p2 <= 0) {
+            errorMsg.innerText = "Error: Total rasio harus 100 (1-99).";
+            document.getElementById('valPort1').innerText = "-";
+            document.getElementById('valPort2').innerText = "-";
+            document.getElementById('lossP1').innerText = "-";
+            document.getElementById('lossP2').innerText = "-";
+            return;
+        } else {
+            errorMsg.innerText = "";
+        }
+
+        const EXCESS_LOSS = 0.5;
+        const loss_p1_ideal = -10 * Math.log10(p1 / 100);
+        const loss_p1_final = loss_p1_ideal + EXCESS_LOSS;
+        const loss_p2_ideal = -10 * Math.log10(p2 / 100);
+        const loss_p2_final = loss_p2_ideal + EXCESS_LOSS;
+        const out1 = (inputPower - loss_p1_final).toFixed(2);
+        const out2 = (inputPower - loss_p2_final).toFixed(2);
+
+        document.getElementById('labelPort1').innerText = `Port 1 (${p1}%)`;
+        document.getElementById('labelPort2').innerText = `Port 2 (${p2}%)`;
+        document.getElementById('valPort1').innerText = out1 + " dBm";
+        document.getElementById('valPort2').innerText = out2 + " dBm";
+        document.getElementById('lossP1').innerText = loss_p1_final.toFixed(2);
+        document.getElementById('lossP2').innerText = loss_p2_final.toFixed(2);
+        
+        colorResult('valPort1', out1);
+        colorResult('valPort2', out2);
+    }
+
+    function colorResult(elementId, value) {
+        const el = document.getElementById(elementId);
+        el.className = "port-val";
+        if(value < -28) el.classList.add("danger");
+        else if(value < -25) el.classList.add("warning");
+        else el.classList.add("good");
+    }
+
+    const initialHash = location.hash.replace('#', '');
+    if (initialHash === 'calculator') {
+        showScreen(initialHash);
+    } else {
+        showScreen('home');
+    }
+
+</script>
+
+</body>
+</html>

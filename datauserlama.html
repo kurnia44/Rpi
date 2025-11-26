@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPI Tools - Data User Lama</title>
+    <style>
+        /* --- 1. CUSTOM FONT DEFINITION (DIULANG DARI INDEX.HTML) --- */
+        @font-face {
+            font-family: 'FontkuCustom';
+            src: url('fontku.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        @font-face {
+            font-family: 'TombolCustom';
+            src: url('tombol.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'JudulCustom';
+            src: url('judul.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        /* -------------------------------------- */
+
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --edit-btn: #3b82f6; 
+        }
+
+        body {
+            font-family: 'FontkuCustom', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #d97706; /* Warna khusus untuk data lama */
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JudulCustom', sans-serif;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        /* TABLE STYLES */
+        .user-table-container {
+            overflow-x: auto; 
+        }
+
+        .user-table {
+            width: 100%;
+            min-width: 700px; 
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.85em;
+        }
+        .user-table th, .user-table td {
+            padding: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .user-table th {
+            background-color: var(--bg);
+            color: #d97706;
+        }
+        
+        /* SIGNAL STATUS INDICATORS */
+        .status-badge {
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: white;
+            display: inline-block;
+        }
+        .status-good { background-color: var(--success); } 
+        .status-warn { background-color: var(--warning); } 
+        .status-critical { background-color: var(--danger); } 
+        
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            font-family: 'FontkuCustom', sans-serif;
+        }
+        .back-button:before {
+            content: '← ';
+        }
+    </style>
+</head>
+<body onload="initDataUserLama()">
+
+<div class="container">
+    <a href="index.html" class="back-button">Kembali ke Menu Utama</a>
+    <h1>Data User Pelanggan LAMA ⚠️</h1>
+
+    <div class="card">
+        <h2>Daftar Data Awal (Tidak dapat diubah)</h2>
+        
+        <p style="font-weight: bold; margin-bottom: 10px;">
+            Total Data Pelanggan Lama: <span id="totalUsersCount" style="color: #d97706;">0</span>
+        </p> 
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label for="searchUser" style="text-align: left;">Cari Data (Nama, Lokasi):</label>
+            <input type="text" id="searchUser" placeholder="Ketik nama atau lokasi..." oninput="filterAndRenderUserTable(this.value)">
+        </div>
+        
+        <div class="user-table-container">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Nama</th>
+                        <th>Lokasi</th>
+                        <th>Status Default</th>
+                        <th>Sinyal Default (dBm)</th>
+                    </tr>
+                </thead>
+                <tbody id="userTable">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+    
+</div>
+
+<script>
+    // Data Awal yang Dibuang dari datauser.html
+    const initialData = [
+        { fullName: "Darma", location: "ggsumo" },
+        { fullName: "Mawan", location: "ggsumo" },
+        { fullName: "Asiasalon", location: "sgbakau" },
+        { fullName: "Yopi", location: "ggsumo" },
+        { fullName: "Dodi Gudang", location: "sbesar" },
+        { fullName: "Heru", location: "sgnyamuk" },
+        { fullName: "Iwan", location: "Darussalam" },
+        { fullName: "Lukman", location: "sgbakau" },
+        { fullName: "Suryani", location: "berombang" },
+        { fullName: "Hoiril", location: "ggseno" },
+        { fullName: "Fikar", location: "beringin" },
+        { fullName: "Sian", location: "rajamuda" },
+        { fullName: "SDN03", location: "sgbakau" },
+        { fullName: "Nurimin", location: "sgnyamuk" },
+        { fullName: "Nurlelamarpaung", location: "sgnyamuk" },
+        { fullName: "Zainal", location: "kualo" },
+        { fullName: "Muslim", location: "bejamu" },
+        { fullName: "Kandar", location: "sgnyamuk" },
+        { fullName: "Udin", location: "bejamu" },
+        { fullName: "Klenteng", location: "sgbakau" },
+        { fullName: "Sugeng", location: "serusamati" },
+        { fullName: "Deva", location: "sgnyamuk" },
+        { fullName: "Happy", location: "sbesar" },
+        { fullName: "Anto", location: "rajamuda" },
+        { fullName: "Nisa", location: "sgnyamuk" },
+        { fullName: "Kliniksinaboi", location: "sgbakau" },
+        { fullName: "Tripa", location: "tripa" },
+        { fullName: "Arfah", location: "beringin1" },
+        { fullName: "Pln", location: "sinaboi" },
+        { fullName: "Ida", location: "sgnyamuk" },
+        { fullName: "Nasir", location: "sgnyamuk" },
+        { fullName: "Sulis", location: "unknown" }, 
+        { fullName: "Jumadi", location: "unknown" },
+        { fullName: "Roha", location: "sbesar" },
+        { fullName: "Heri", location: "sbesar" },
+        { fullName: "Sarah", location: "berombang" },
+        { fullName: "Natas", location: "berombang" },
+        { fullName: "Zidan", location: "rajamuda" },
+        { fullName: "Adit", location: "rajamuda" },
+        { fullName: "Resy", location: "rajamuda" },
+        { fullName: "Boiman", location: "sentosa" },
+        { fullName: "Borneng", location: "kualo" },
+        { fullName: "Ratni", location: "kualo" },
+        { fullName: "Hadi", location: "bintang" },
+        { fullName: "Bakri", location: "sbakau" },
+        { fullName: "Siska", location: "bejamu" },
+        { fullName: "Marni", location: "rajamuda" },
+        { fullName: "Ade", location: "kualo" },
+        { fullName: "Riska", location: "kualo" },
+        { fullName: "Tompu", location: "kualo" },
+        { fullName: "Aril", location: "bejamu" },
+        { fullName: "Rika", location: "sgnyamuk" },
+        { fullName: "Rojali", location: "bintang" },
+        { fullName: "Anangmas", location: "sgnyamuk" },
+        { fullName: "Ainun", location: "berombang" },
+        { fullName: "Siti", location: "berombang" },
+        { fullName: "Iram", location: "bintang" },
+        { fullName: "Irawati", location: "bejamu" },
+        { fullName: "Rani", location: "kualo" },
+        { fullName: "Sangkut", location: "bgtanjung" },
+        { fullName: "Normah", location: "poniman" },
+        { fullName: "Opunggalung", location: "kualo" },
+        { fullName: "Tukidi", location: "bejamu" },
+        { fullName: "Galang", location: "sgnyamuk" },
+        { fullName: "Pania", location: "bejamu" },
+        { fullName: "Anggita", location: "poniman" },
+        { fullName: "Ayu", location: "rajamuda" },
+        { fullName: "Riko", location: "rajamuda" },
+        { fullName: "Nurmaini", location: "sgnyamuk" },
+        { fullName: "Akra", location: "sgnyamuk" },
+        { fullName: "Tamrin", location: "sgnyamuk" },
+        { fullName: "Julianto", location: "sp200" },
+        { fullName: "Jaludin", location: "bejamu" },
+        { fullName: "Jefri", location: "kualo" },
+        { fullName: "Fatimah", location: "kualo" },
+        { fullName: "Darmaji", location: "kualo" },
+        { fullName: "Irma", location: "kualo" },
+        { fullName: "Suratmin", location: "sp200" },
+        { fullName: "Munir", location: "bintang" },
+        { fullName: "Rapi", location: "bintang" },
+        { fullName: "Mail", location: "bintang" },
+        { fullName: "Nanang", location: "bintang" },
+        { fullName: "Broto", location: "bintang" },
+        { fullName: "Ujang", location: "bintang" },
+        { fullName: "Heri", location: "bintang" },
+        { fullName: "Aryo", location: "bintang" },
+        { fullName: "Liza", location: "sbakau" },
+        { fullName: "Amor", location: "sgnyamuk" },
+        { fullName: "Udin", location: "rajamuda" },
+        { fullName: "David2", location: "sbakau" },
+        { fullName: "Irma", location: "darusalam" },
+        { fullName: "Krisna", location: "darusalam" },
+        { fullName: "Paisal", location: "sgnyamuk" },
+        { fullName: "Julita", location: "kualo" },
+        { fullName: "Intan", location: "ggsentosa" },
+        { fullName: "Anggun", location: "bintang" },
+        { fullName: "Rusita", location: "berombang" },
+        { fullName: "Dedi", location: "sgnyamuk" },
+        { fullName: "Sarinah", location: "ggseno" },
+        { fullName: "Amad", location: "sgnyamuk" },
+        { fullName: "Edi", location: "sgnyamuk" },
+        { fullName: "Wiwit", location: "bintang" },
+        { fullName: "Diani", location: "sgnyamuk" },
+        { fullName: "Riza", location: "kualo" },
+        { fullName: "Febri", location: "kualo" },
+        { fullName: "Adel", location: "kualo" },
+        { fullName: "Yoga", location: "bejamu" },
+        { fullName: "Hermanto", location: "serusamati" },
+        { fullName: "Lajang", location: "bejamu" },
+        { fullName: "Darmisah", location: "bejamu" },
+        { fullName: "Bahri", location: "berombang" },
+        { fullName: "Yatin", location: "kualo" },
+        { fullName: "Mira", location: "rajamuda" },
+        { fullName: "Nova", location: "rajamuda" },
+        { fullName: "Muliani", location: "rajamuda" },
+        { fullName: "BerkahJaya", location: "bejamu" },
+        { fullName: "Angga", location: "sgnyamuk" },
+        { fullName: "Bunga", location: "kualo" },
+        { fullName: "Grespin", location: "kualo" },
+        { fullName: "Teti", location: "kualo" },
+        { fullName: "Zulham", location: "darusalam" },
+        { fullName: "Ojodumeh", location: "tripa" },
+        { fullName: "Lisin", location: "sgnyamuk" },
+        { fullName: "Rajaponsel", location: "sgnyamuk" },
+        { fullName: "Daryani", location: "kualo" },
+        { fullName: "Dewo", location: "kualo" },
+        { fullName: "Parlan", location: "bejamu" },
+        { fullName: "Ningsih", location: "berombang" },
+        { fullName: "Nurhasana", location: "sgnyamuk" },
+        { fullName: "Mudo", location: "sgnyamuk" },
+        { fullName: "Kulin", location: "sgnyamuk" },
+        { fullName: "Angel", location: "darusalam" },
+        { fullName: "Rendi", location: "sgnyamuk" }
+    ];
+
+    let users = [];
+
+    function initDataUserLama() {
+        // Inisialisasi data dari data lama
+        initialData.forEach(item => {
+            users.push({
+                name: item.fullName.toLowerCase(), 
+                location: item.location.toLowerCase(),
+                status: 'Aktif (Default)',    
+                signal: -24.0, 
+            });
+        });
+        
+        filterAndRenderUserTable('');
+        updateTotalCount();
+        
+        // Atur agar tombol back ponsel kembali ke index.html
+        history.pushState(null, null, 'datauserlama.html');
+        window.addEventListener('popstate', function(event) {
+            if (location.pathname.endsWith('datauserlama.html')) {
+                window.location.href = 'index.html';
+            }
+        });
+    }
+
+    function updateTotalCount() {
+        document.getElementById('totalUsersCount').innerText = users.length;
+    }
+
+    function filterAndRenderUserTable(searchTerm) {
+        const lowerCaseSearch = searchTerm.toLowerCase();
+        
+        const filteredUsers = users.filter(user => {
+            return user.name.toLowerCase().includes(lowerCaseSearch) ||
+                   user.location.toLowerCase().includes(lowerCaseSearch);
+        });
+        
+        renderUserTable(filteredUsers);
+    }
+
+    function getSignalClass(signal) {
+        if (signal >= -25.0) {
+            return 'status-good'; 
+        } else if (signal > -28.0) { 
+            return 'status-warn'; 
+        } else {
+            return 'status-critical'; 
+        }
+    }
+
+    function renderUserTable(dataArray) {
+        const dataToRender = dataArray || users;
+        const tableBody = document.getElementById('userTable');
+        tableBody.innerHTML = '';
+        
+        if (dataToRender.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="color:#64748b; padding: 20px;">Data pelanggan lama tidak ditemukan.</td></tr>';
+            return;
+        }
+
+        dataToRender.forEach((user, index) => {
+            const signalClass = getSignalClass(user.signal);
+            
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${user.name}</td>
+                    <td>${user.location || '-'}</td>
+                    <td>${user.status}</td>
+                    <td>
+                        <span class="status-badge ${signalClass}">
+                            ${user.signal.toFixed(2)} dBm
+                        </span>
+                    </td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    }
+
+</script>
+
+</body>
+</html>
